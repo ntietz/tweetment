@@ -3,6 +3,11 @@ import sklearn
 import string
 import tweetmotif
 
+# This list of POS tags is provided in the annotation guidelines for Twokenizer.
+# See here: http://www.ark.cs.cmu.edu/TweetNLP/annot_guidelines.pdf
+pos_tags = ['N', 'O', '^', 'S', 'Z', 'V', 'A', 'R', '!', 'D', 'P', '&', 'T', 'X', '#', '@', '~', 'U', 'E', '$', ',', 'G', 'L', 'M', 'Y']
+pos_idxs = dict(zip(pos_tags, range(0, len(pos_tags))))
+
 
 def corpus_ngrams(corpus):
   '''
@@ -126,10 +131,18 @@ def get_cluster_mem_vec(cids, w2c, words):
   return vec
 
 
-def generate_features(tweet, w2c, cids):
+def get_pos_vec(pos):
+  vec = [0]*len(pos_tags)
+  for tag in pos:
+    vec[pos_idxs[tag]] += 1
+  return vec
+
+
+def generate_features(record, w2c, cids):
   '''
     Takes in a tweet and generates a feature vector.
   '''
+  tweet, pos, pos_conf, orig = record
   words = tweet.split()
 
   '''
@@ -137,7 +150,7 @@ def generate_features(tweet, w2c, cids):
     / word ngrams
     / character ngrams
     + allcaps
-    - pos
+    + pos
     + hashtags
     - lexicons
     + punctuation
@@ -162,7 +175,9 @@ def generate_features(tweet, w2c, cids):
   num_seq_question, num_seq_exclaim, num_seq_both = num_contiguous_question_exclaim(tweet)
   cluster_mem_vec = get_cluster_mem_vec(cids, w2c, words)
 
-  features = [num_allcaps, num_hashtags, num_elongated, last_is_question_or_exclaim, num_seq_question, num_seq_exclaim, num_seq_both] + cluster_mem_vec
+  pos_vec = get_pos_vec(pos.split())
+
+  features = [num_allcaps, num_hashtags, num_elongated, last_is_question_or_exclaim, num_seq_question, num_seq_exclaim, num_seq_both] + cluster_mem_vec + pos_vec
   return features
 
 
@@ -180,7 +195,6 @@ def main(args):
     w2c, c2w, cids = load_clusters(args.clusters)
     word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
     for record in corpus:
-      tweet, _, _, _ = record
-      generate_features(tweet, w2c, cids)
-    print generate_features(corpus[1][0], w2c, cids)
+      generate_features(record, w2c, cids)
+    print generate_features(corpus[1], w2c, cids)
 
