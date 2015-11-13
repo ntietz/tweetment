@@ -15,3 +15,13 @@ information.
 TweetMotif is licensed under the Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0.html
 Copyright Brendan O'Connor, Michel Krieger, and David Ahn, 2009-2010
 
+Sentiment
+---------
+
+The Sentiment library was developed by Nicole Tietz-Sokolskaya. I want to license it
+under the Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0.html
+For now, do not assume that that is true. I am waiting to find out the policy
+of our university on software licenses.
+
+Copyright 2015 (It is currently unclear to me whether I hold the copyright or the university does, so I am leaving that out for now).
+
