@@ -21,30 +21,63 @@ def corpus_ngrams(corpus):
   nonc_ngrams = {} # non-contiguous word ngrams
   char_ngrams = {}
 
-  # At first, all the sets are empty.
-  for length in word_lengths:
-    word_ngrams[length] = set()
-    nonc_ngrams[length] = set()
-  for length in char_lengths:
-    char_ngrams[length] = set()
+  word_idx = 0
+  nonc_idx = 0
+  char_idx = 0
 
   for record in corpus:
     tweet, _, _, _ = record
     for length in char_lengths:
       for idx in range(0, len(tweet) - length + 1):
-        char_ngrams[length].add(tweet[idx : idx+length])
+        ng = tweet[idx : idx+length]
+        if ng not in char_ngrams:
+          char_ngrams[ng] = char_idx
+          char_idx += 1
     words = tweet.split()
     for length in word_lengths:
       for idx in range(0, len(words) - length + 1):
-        ngram = words[idx : idx+length]
-        word_ngrams[length].add(tuple(ngram))
+        ng = words[idx : idx+length]
+        if tuple(ng) not in word_ngrams:
+          word_ngrams[tuple(ng)] = word_idx
+          word_idx += 1
         for j in range(0, length):
-          tmp = list(ngram)
+          tmp = list(ng)
           tmp[j] = '*' # TODO: should this be a symbol like <*> ?
-          nonc_ngrams[length].add(tuple(tmp))
+          if tuple(tmp) not in nonc_ngrams:
+            nonc_ngrams[tuple(tmp)] = nonc_idx
+            nonc_idx += 1
 
   #print "words: %s \n\n nonc: %s \n\n char: %s \n\n" % (word_ngrams, nonc_ngrams, char_ngrams)
   return word_ngrams, nonc_ngrams, char_ngrams
+
+
+def get_ngram_vec(tweet, corpus_word_ng, corpus_nonc_ng, corpus_char_ng):
+  word_vec = [0] * len(corpus_word_ng)
+  nonc_vec = [0] * len(corpus_nonc_ng)
+  char_vec = [0] * len(corpus_char_ng)
+
+  word_lengths = [1,2,3,4]
+  char_lengths = [1,2,3]
+
+  for length in char_lengths:
+    for idx in range(0, len(tweet) - length + 1):
+      ng = tweet[idx : idx+length]
+      if ng in corpus_char_ng:
+        char_vec[corpus_char_ng[ng]] = 1
+
+  words = tweet.split()
+  for length in word_lengths:
+    for idx in range(0, len(words) - length + 1):
+      ng = words[idx : idx+length]
+      if tuple(ng) in corpus_word_ng:
+        word_vec[corpus_word_ng[tuple(ng)]] = 1
+      for j in range(0, length):
+        tmp = list(ng)
+        tmp[j] = '*' # TODO: should this be a symbol like <*> ?
+        if tuple(tmp) in corpus_nonc_ng:
+          nonc_vec[corpus_nonc_ng[tuple(tmp)]] = 1
+
+  return word_vec, nonc_vec, char_vec
 
 
 def word_is_all_caps(word):
@@ -138,7 +171,8 @@ def get_pos_vec(pos):
   return vec
 
 
-def generate_features(record, w2c, cids):
+def generate_features(record, w2c, cids, corpus_word_ng,
+    corpus_nonc_ng, corpus_char_ng):
   '''
     Takes in a tweet and generates a feature vector.
   '''
@@ -153,8 +187,8 @@ def generate_features(record, w2c, cids):
     + punctuation
     + elongated words
     + clusters
-    / word ngrams
-    / character ngrams
+    + word ngrams
+    + character ngrams
     / emoticons
     - lexicons
     - negation
@@ -177,7 +211,13 @@ def generate_features(record, w2c, cids):
 
   pos_vec = get_pos_vec(pos.split())
 
-  features = [num_allcaps, num_hashtags, num_elongated, last_is_question_or_exclaim, num_seq_question, num_seq_exclaim, num_seq_both] + cluster_mem_vec + pos_vec
+  ngram_w_vec, ngram_n_vec, ngram_c_vec = get_ngram_vec(tweet, corpus_word_ng,
+      corpus_nonc_ng, corpus_char_ng)
+
+  features = [num_allcaps, num_hashtags, num_elongated,
+      last_is_question_or_exclaim, num_seq_question, num_seq_exclaim,
+      num_seq_both] + cluster_mem_vec + pos_vec + ngram_w_vec + ngram_n_vec +\
+      ngram_c_vec
   return features
 
 
@@ -195,6 +235,6 @@ def main(args):
     w2c, c2w, cids = load_clusters(args.clusters)
     word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
     for record in corpus:
-      generate_features(record, w2c, cids)
-    print generate_features(corpus[1], w2c, cids)
+      generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
+    print generate_features(corpus[1], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
 
