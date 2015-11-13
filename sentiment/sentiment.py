@@ -54,6 +54,13 @@ def is_elongated(word):
       return True
   return False
 
+def contains_emoticon(s):
+  '''
+    Checks if the passed-in string contains any emoticons.
+    Adapted from a regex here: http://sentiment.christopherpotts.net/tokenizing.html
+  '''
+  pass # TODO
+
 def generate_features(tweet):
   '''
     Takes in a tweet and generates a feature vector.
@@ -61,16 +68,16 @@ def generate_features(tweet):
   words = tweet.split()
 
   '''
-    Our features are:
-    - word ngrams
-    - character ngrams
-    - allcaps
+    Our features are: (+ done, / wip, - todo)
+    / word ngrams
+    / character ngrams
+    + allcaps
     - pos
-    - hashtags
+    + hashtags
     - lexicons
     - punctuation
-    - emoticons
-    - elongated words
+    / emoticons
+    + elongated words
     - clusters
     - negation
   '''
