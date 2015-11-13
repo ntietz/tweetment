@@ -47,18 +47,47 @@ def word_is_all_caps(word):
       return False
   return True
 
+def is_elongated(word):
+  elong_len = 3
+  for idx in range(len(word) - elong_len + 1):
+    if word[idx] == word[idx+1] and word[idx] == word[idx+2]:
+      return True
+  return False
+
 def generate_features(tweet):
   '''
     Takes in a tweet and generates a feature vector.
   '''
   words = tweet.split()
 
+  '''
+    Our features are:
+    - word ngrams
+    - character ngrams
+    - allcaps
+    - pos
+    - hashtags
+    - lexicons
+    - punctuation
+    - emoticons
+    - elongated words
+    - clusters
+    - negation
+  '''
+
   num_allcaps = 0
+  num_hashtags = 0
+  num_elongated = 0
   for word in words:
     if word_is_all_caps:
       num_allcaps += 1
+    if word[0] == '#':
+      num_hashtags += 1
+    if is_elongated(word):
+      num_elongated += 1
 
 def main():
-  corpus = ["This is a tweet .", "This is 'nt a status message ."]
+  corpus = ["This is a tweet looong #happy #sad .", "This is 'nt a status message ."]
   word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
+  print generate_features(corpus[0])
 
