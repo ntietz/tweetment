@@ -147,16 +147,16 @@ def generate_features(record, w2c, cids):
 
   '''
     Our features are: (+ done, / wip, - todo)
-    / word ngrams
-    / character ngrams
     + allcaps
     + pos
     + hashtags
-    - lexicons
     + punctuation
-    / emoticons
     + elongated words
     + clusters
+    / word ngrams
+    / character ngrams
+    / emoticons
+    - lexicons
     - negation
   '''
 
