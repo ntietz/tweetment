@@ -1,9 +1,6 @@
 import sklearn
 import string
-'''
-  This file contains an implementation of a twitter sentiment classifier based
-  on the work of Saif Mohammad et al (http://saifmohammad.com/WebDocs/sentimentMKZ.pdf)
-'''
+import tweetmotif
 
 def corpus_ngrams(corpus):
   '''
