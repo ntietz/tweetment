@@ -1,2 +1,4 @@
 *.pyc
+*.swp
 scripts/cache
+scripts/data
