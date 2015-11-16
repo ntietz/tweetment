@@ -1,7 +1,7 @@
 import argparse
 import sklearn
 import string
-import tweetmotif
+import tweetmotif.emoticons as emoticons
 
 # This list of POS tags is provided in the annotation guidelines for Twokenizer.
 # See here: http://www.ark.cs.cmu.edu/TweetNLP/annot_guidelines.pdf
@@ -131,12 +131,18 @@ def is_elongated(word):
   return False
 
 
-def contains_emoticon(s):
+def get_emoticon_vec(original_tweet, last_token):
   '''
     Checks if the passed-in string contains any emoticons.
-    Adapted from a regex here: http://sentiment.christopherpotts.net/tokenizing.html
+
+    Uses TweetMotif.
   '''
-  pass # TODO
+  positive_in_tweet = 1 if emoticons.Happy_RE.search(original_tweet) else 0
+  negative_in_tweet = 1 if emoticons.Sad_RE.search(original_tweet) else 0
+  positive_ends_tweet = 1 if emoticons.Happy_RE.search(last_token) else 0
+  negative_ends_tweet = 1 if emoticons.Sad_RE.search(last_token) else 0
+  return [positive_in_tweet, negative_in_tweet, positive_ends_tweet,
+      negative_ends_tweet]
 
 
 def load_clusters(cluster_filename):
@@ -189,7 +195,7 @@ def generate_features(record, w2c, cids, corpus_word_ng,
     + clusters
     + word ngrams
     + character ngrams
-    / emoticons
+    + emoticons
     - lexicons
     - negation
   '''
@@ -214,10 +220,12 @@ def generate_features(record, w2c, cids, corpus_word_ng,
   ngram_w_vec, ngram_n_vec, ngram_c_vec = get_ngram_vec(tweet, corpus_word_ng,
       corpus_nonc_ng, corpus_char_ng)
 
+  emoticon_vec = get_emoticon_vec(orig, words[-1])
+
   features = [num_allcaps, num_hashtags, num_elongated,
       last_is_question_or_exclaim, num_seq_question, num_seq_exclaim,
       num_seq_both] + cluster_mem_vec + pos_vec + ngram_w_vec + ngram_n_vec +\
-      ngram_c_vec
+      ngram_c_vec + emoticon_vec
   return features
 
 
@@ -236,5 +244,5 @@ def main(args):
     word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
     for record in corpus:
       generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
-    print generate_features(corpus[1], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
+    print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
 
