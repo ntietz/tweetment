@@ -251,6 +251,58 @@ def load_lexicons(cache_dir):
       else:
         lexicons['mpqa']['neutral_scores'][word] = 1.0
 
+  lexicons['hashtag'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/unigrams-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split()
+      score = float(score_str)
+      if score > 0:
+        lexicons['hashtag']['positive_scores'][word] = score
+      else:
+        lexicons['hashtag']['negative_scores'][word] = abs(score)
+  with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/bigrams-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split('\t')
+      score = float(score_str)
+      if score > 0:
+        lexicons['hashtag']['positive_scores'][word] = score
+      else:
+        lexicons['hashtag']['negative_scores'][word] = abs(score)
+  with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/pairs-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split('\t')
+      score = float(score_str)
+      if score > 0:
+        lexicons['hashtag']['positive_scores'][word] = score
+      else:
+        lexicons['hashtag']['negative_scores'][word] = abs(score)
+
+  lexicons['sentiment140'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  with open(cache_dir + '/Sentiment140-Lexicon-v0.1/unigrams-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split()
+      score = float(score_str)
+      if score > 0:
+        lexicons['sentiment140']['positive_scores'][word] = score
+      else:
+        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+  with open(cache_dir + '/Sentiment140-Lexicon-v0.1/bigrams-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split('\t')
+      score = float(score_str)
+      if score > 0:
+        lexicons['sentiment140']['positive_scores'][word] = score
+      else:
+        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+  with open(cache_dir + '/Sentiment140-Lexicon-v0.1/pairs-pmilexicon.txt') as f:
+    for line in f:
+      word, score_str, _, _ = line.split('\t')
+      score = float(score_str)
+      if score > 0:
+        lexicons['sentiment140']['positive_scores'][word] = score
+      else:
+        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+
   return lexicons
 
 
