@@ -1,4 +1,5 @@
 import argparse
+import itertools
 import sklearn
 import string
 import tweetmotif.emoticons as emoticons
@@ -184,9 +185,9 @@ def load_lexicons(cache_dir):
 
     Our standard lexicon format will be:
       {
-        'positive_scores': dict(...),
-        'negative_scores': dict(...),
-        'neutral_scores': dict(...)
+        'positive': dict(...),
+        'negative': dict(...),
+        'neutral': dict(...)
       }
     A term has the sentiment of whichever dictionary it is in (possibly
     multiple).
@@ -195,22 +196,22 @@ def load_lexicons(cache_dir):
   # First, load the Bing Liu lexicon.
   # NOTE: the paper we are replicating does not indicate what scores are used
   # for this lexicon, so we used 1.0 for each term.
-  lexicons['bingliu'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  lexicons['bingliu'] = {'positive': {}, 'negative': {}, 'neutral': {}}
   with open(cache_dir + '/bingliulexicon/positive-words.txt') as pos_file:
     for line in pos_file:
       if line[0] == ';' or len(line) == 0:
         continue # skip comments or blank lines
-      lexicons['bingliu']['positive_scores'][line.strip()] = 1.0
+      lexicons['bingliu']['positive'][line.strip()] = 1.0
   with open(cache_dir + '/bingliulexicon/negative-words.txt') as neg_file:
     for line in neg_file:
       if line[0] == ';' or len(line) == 0:
         continue # skip comments or blank lines
-      lexicons['bingliu']['negative_scores'][line.strip()] = 1.0
+      lexicons['bingliu']['negative'][line.strip()] = 1.0
 
   # Now load the NRC Emotion Lexicon.
   # NOTE: the paper we are replicating does not indicate what scores are used
   # for this lexicon, so we used 1.0 for each term.
-  lexicons['nrc-emotion'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  lexicons['nrc-emotion'] = {'positive': {}, 'negative': {}, 'neutral': {}}
   with open(cache_dir + '/NRC-Emotion-Lexicon-v0.92/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt') as f:
     line_number = 0
     for line in f:
@@ -220,16 +221,16 @@ def load_lexicons(cache_dir):
       word, affect, flag = line.strip().split()
       if flag == '1':
         if affect == 'positive':
-          lexicons['nrc-emotion']['positive_scores'][word] = 1.0
+          lexicons['nrc-emotion']['positive'][word] = 1.0
         elif affect == 'negative':
-          lexicons['nrc-emotion']['negative_scores'][word] = 1.0
+          lexicons['nrc-emotion']['negative'][word] = 1.0
 
   # Now load the MPQA lexicon.
   # NOTE: the paper we are replicating does not indicate what scores are used
   # for this lexicon, so we used 1.0 for each term.
   # NOTE: this lexicon is deeper than we are using it for. It also gives info
   # about stemming, parts of speech, etc. which we ignore for now.
-  lexicons['mpqa'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  lexicons['mpqa'] = {'positive': {}, 'negative': {}, 'neutral': {}}
   with open(cache_dir + '/subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff') as f:
     for line in f:
       word_idx = line.find('word')
@@ -245,69 +246,150 @@ def load_lexicons(cache_dir):
       # lexicon, and in that case the final occurrence is the correct sentiment
       # so we will apply that technique to the whole dataset.
       if positive_idx > max(negative_idx, neutral_idx):
-        lexicons['mpqa']['positive_scores'][word] = 1.0
+        lexicons['mpqa']['positive'][word] = 1.0
       elif negative_idx > max(positive_idx, neutral_idx):
-        lexicons['mpqa']['negative_scores'][word] = 1.0
+        lexicons['mpqa']['negative'][word] = 1.0
       else:
-        lexicons['mpqa']['neutral_scores'][word] = 1.0
+        lexicons['mpqa']['neutral'][word] = 1.0
 
-  lexicons['hashtag'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  lexicons['hashtag'] = {'positive': {}, 'negative': {}, 'neutral': {}}
   with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/unigrams-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split()
       score = float(score_str)
       if score > 0:
-        lexicons['hashtag']['positive_scores'][word] = score
+        lexicons['hashtag']['positive'][word] = score
       else:
-        lexicons['hashtag']['negative_scores'][word] = abs(score)
+        lexicons['hashtag']['negative'][word] = abs(score)
   with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/bigrams-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split('\t')
       score = float(score_str)
       if score > 0:
-        lexicons['hashtag']['positive_scores'][word] = score
+        lexicons['hashtag']['positive'][word] = score
       else:
-        lexicons['hashtag']['negative_scores'][word] = abs(score)
+        lexicons['hashtag']['negative'][word] = abs(score)
   with open(cache_dir + '/NRC-Hashtag-Sentiment-Lexicon-v0.1/pairs-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split('\t')
       score = float(score_str)
       if score > 0:
-        lexicons['hashtag']['positive_scores'][word] = score
+        lexicons['hashtag']['positive'][word] = score
       else:
-        lexicons['hashtag']['negative_scores'][word] = abs(score)
+        lexicons['hashtag']['negative'][word] = abs(score)
 
-  lexicons['sentiment140'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  lexicons['sentiment140'] = {'positive': {}, 'negative': {}, 'neutral': {}}
   with open(cache_dir + '/Sentiment140-Lexicon-v0.1/unigrams-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split()
       score = float(score_str)
       if score > 0:
-        lexicons['sentiment140']['positive_scores'][word] = score
+        lexicons['sentiment140']['positive'][word] = score
       else:
-        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+        lexicons['sentiment140']['negative'][word] = abs(score)
   with open(cache_dir + '/Sentiment140-Lexicon-v0.1/bigrams-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split('\t')
       score = float(score_str)
       if score > 0:
-        lexicons['sentiment140']['positive_scores'][word] = score
+        lexicons['sentiment140']['positive'][word] = score
       else:
-        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+        lexicons['sentiment140']['negative'][word] = abs(score)
   with open(cache_dir + '/Sentiment140-Lexicon-v0.1/pairs-pmilexicon.txt') as f:
     for line in f:
       word, score_str, _, _ = line.split('\t')
       score = float(score_str)
       if score > 0:
-        lexicons['sentiment140']['positive_scores'][word] = score
+        lexicons['sentiment140']['positive'][word] = score
       else:
-        lexicons['sentiment140']['negative_scores'][word] = abs(score)
+        lexicons['sentiment140']['negative'][word] = abs(score)
 
   return lexicons
 
 
+def get_lexicon_vec(tokens, lexicons):
+  '''
+    Takes in the tweet (tokenized) and the lexicons and returns a feature
+    vector for the tweet.
+  '''
+  vec = []
+  lexicon_names = ['bingliu', 'nrc-emotion', 'mpqa', 'hashtag', 'sentiment140']
+
+  # Unigrams!
+  for sentiment in ['positive', 'negative', 'neutral']:
+    scores = {}
+    for lexicon in lexicon_names:
+      scores[lexicon] = {}
+      scores[lexicon]['count'] = 0
+      scores[lexicon]['total'] = 0.0
+      scores[lexicon]['max'] = 0
+      scores[lexicon]['last'] = 0
+
+    for token in tokens:
+      for lexicon in lexicon_names:
+        if token in lexicons[lexicon][sentiment]:
+          scores[lexicon]['count'] += 1
+          scores[lexicon]['total']  += lexicons[lexicon][sentiment][token]
+          scores[lexicon]['max']  = max(lexicons[lexicon][sentiment][token], scores[lexicon]['max'])
+          scores[lexicon]['last'] = lexicons[lexicon][sentiment][token]
+
+    for lexicon in lexicon_names:
+      vec += [scores[lexicon]['count'], scores[lexicon]['total'], scores[lexicon]['max'], scores[lexicon]['last']]
+
+  # For bigrams and pairs, we only use a subset.
+  lexicon_names = ['hashtag', 'sentiment140']
+
+  # Bigrams!
+  for sentiment in ['positive', 'negative', 'neutral']:
+    scores = {}
+    for lexicon in lexicon_names:
+      scores[lexicon] = {}
+      scores[lexicon]['count'] = 0
+      scores[lexicon]['total'] = 0.0
+      scores[lexicon]['max'] = 0
+      scores[lexicon]['last'] = 0
+
+    for bigram in zip(tokens, tokens[1:]):
+      token = bigram[0] + ' ' + bigram[1]
+      for lexicon in lexicon_names:
+        if token in lexicons[lexicon][sentiment]:
+          scores[lexicon]['count'] += 1
+          scores[lexicon]['total']  += lexicons[lexicon][sentiment][token]
+          scores[lexicon]['max']  = max(lexicons[lexicon][sentiment][token], scores[lexicon]['max'])
+          scores[lexicon]['last'] = lexicons[lexicon][sentiment][token]
+
+    for lexicon in lexicon_names:
+      vec += [scores[lexicon]['count'], scores[lexicon]['total'], scores[lexicon]['max'], scores[lexicon]['last']]
+
+  # Pairs!
+  for sentiment in ['positive', 'negative', 'neutral']:
+    scores = {}
+    for lexicon in lexicon_names:
+      scores[lexicon] = {}
+      scores[lexicon]['count'] = 0
+      scores[lexicon]['total'] = 0.0
+      scores[lexicon]['max'] = 0
+      scores[lexicon]['last'] = 0
+
+    for pair in itertools.permutations(tokens, 2):
+      token = pair[0] + '---' + pair[1]
+      for lexicon in lexicon_names:
+        if token in lexicons[lexicon][sentiment]:
+          scores[lexicon]['count'] += 1
+          scores[lexicon]['total']  += lexicons[lexicon][sentiment][token]
+          scores[lexicon]['max']  = max(lexicons[lexicon][sentiment][token], scores[lexicon]['max'])
+          scores[lexicon]['last'] = lexicons[lexicon][sentiment][token]
+
+    for lexicon in lexicon_names:
+      vec += [scores[lexicon]['count'], scores[lexicon]['total'], scores[lexicon]['max'], scores[lexicon]['last']]
+
+  # TODO: bigrams
+
+  return vec
+
+
 def generate_features(record, w2c, cids, corpus_word_ng,
-    corpus_nonc_ng, corpus_char_ng):
+    corpus_nonc_ng, corpus_char_ng, lexicons):
   '''
     Takes in a tweet and generates a feature vector.
   '''
@@ -325,7 +407,7 @@ def generate_features(record, w2c, cids, corpus_word_ng,
     + word ngrams
     + character ngrams
     + emoticons
-    / lexicons
+    + lexicons
     - negation
   '''
 
@@ -351,10 +433,12 @@ def generate_features(record, w2c, cids, corpus_word_ng,
 
   emoticon_vec = get_emoticon_vec(orig, words[-1])
 
+  lexicon_vec = get_lexicon_vec(words, lexicons)
+
   features = [num_allcaps, num_hashtags, num_elongated,
       last_is_question_or_exclaim, num_seq_question, num_seq_exclaim,
       num_seq_both] + cluster_mem_vec + pos_vec + ngram_w_vec + ngram_n_vec +\
-      ngram_c_vec + emoticon_vec
+      ngram_c_vec + emoticon_vec + lexicon_vec
   return features
 
 
@@ -374,6 +458,6 @@ def main(args):
     w2c, c2w, cids = load_clusters(args.clusters)
     word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
     for record in corpus:
-      generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
-    print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams)
+      generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
+    print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
 
