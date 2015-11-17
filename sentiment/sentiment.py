@@ -177,6 +177,83 @@ def get_pos_vec(pos):
   return vec
 
 
+def load_lexicons(cache_dir):
+  '''
+    Pass in the path to the cache directory, and this function will load return
+    the lexicons we are using.
+
+    Our standard lexicon format will be:
+      {
+        'positive_scores': dict(...),
+        'negative_scores': dict(...),
+        'neutral_scores': dict(...)
+      }
+    A term has the sentiment of whichever dictionary it is in (possibly
+    multiple).
+  '''
+  lexicons = {}
+  # First, load the Bing Liu lexicon.
+  # NOTE: the paper we are replicating does not indicate what scores are used
+  # for this lexicon, so we used 1.0 for each term.
+  lexicons['bingliu'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  with open(cache_dir + '/bingliulexicon/positive-words.txt') as pos_file:
+    for line in pos_file:
+      if line[0] == ';' or len(line) == 0:
+        continue # skip comments or blank lines
+      lexicons['bingliu']['positive_scores'][line.strip()] = 1.0
+  with open(cache_dir + '/bingliulexicon/negative-words.txt') as neg_file:
+    for line in neg_file:
+      if line[0] == ';' or len(line) == 0:
+        continue # skip comments or blank lines
+      lexicons['bingliu']['negative_scores'][line.strip()] = 1.0
+
+  # Now load the NRC Emotion Lexicon.
+  # NOTE: the paper we are replicating does not indicate what scores are used
+  # for this lexicon, so we used 1.0 for each term.
+  lexicons['nrc-emotion'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  with open(cache_dir + '/NRC-Emotion-Lexicon-v0.92/NRC-emotion-lexicon-wordlevel-alphabetized-v0.92.txt') as f:
+    line_number = 0
+    for line in f:
+      if line_number < 46:
+        line_number += 1
+        continue
+      word, affect, flag = line.strip().split()
+      if flag == '1':
+        if affect == 'positive':
+          lexicons['nrc-emotion']['positive_scores'][word] = 1.0
+        elif affect == 'negative':
+          lexicons['nrc-emotion']['negative_scores'][word] = 1.0
+
+  # Now load the MPQA lexicon.
+  # NOTE: the paper we are replicating does not indicate what scores are used
+  # for this lexicon, so we used 1.0 for each term.
+  # NOTE: this lexicon is deeper than we are using it for. It also gives info
+  # about stemming, parts of speech, etc. which we ignore for now.
+  lexicons['mpqa'] = {'positive_scores': {}, 'negative_scores': {}, 'neutral_scores': {}}
+  with open(cache_dir + '/subjectivity_clues_hltemnlp05/subjclueslen1-HLTEMNLP05.tff') as f:
+    for line in f:
+      word_idx = line.find('word')
+      word = line[ line.find('=',word_idx)+1 : line.find(' ',word_idx) ]
+
+      # NOTE: some of the polarities here are weird, so I'm just going to punt
+      # and only use 'positive', 'negative', or 'neutral'. I'm ignoring weak
+      # polarities and 'both'.
+      positive_idx = line.rfind('positive')
+      negative_idx = line.rfind('negative')
+      neutral_idx = line.rfind('neutral')
+      # 'positive', 'negative', and 'neutral' only co-occur once in the entire
+      # lexicon, and in that case the final occurrence is the correct sentiment
+      # so we will apply that technique to the whole dataset.
+      if positive_idx > max(negative_idx, neutral_idx):
+        lexicons['mpqa']['positive_scores'][word] = 1.0
+      elif negative_idx > max(positive_idx, neutral_idx):
+        lexicons['mpqa']['negative_scores'][word] = 1.0
+      else:
+        lexicons['mpqa']['neutral_scores'][word] = 1.0
+
+  return lexicons
+
+
 def generate_features(record, w2c, cids, corpus_word_ng,
     corpus_nonc_ng, corpus_char_ng):
   '''
@@ -196,7 +273,7 @@ def generate_features(record, w2c, cids, corpus_word_ng,
     + word ngrams
     + character ngrams
     + emoticons
-    - lexicons
+    / lexicons
     - negation
   '''
 
@@ -232,11 +309,13 @@ def generate_features(record, w2c, cids, corpus_word_ng,
 def add_arguments(parser):
   parser.add_argument('--input', type=str, required=True, help='Input file, which must be the output from Twokenize.')
   parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
+  parser.add_argument('--cache', type=str, default='./scripts/cache', help='The directory we cache downloaded files in.')
 
 
 def main(args):
   with open(args.input) as f:
     corpus = []
+    lexicons = load_lexicons(args.cache)
     for line in f:
       tok_tweet, pos, pos_conf, orig_tweet = line.strip().split('\t')
       corpus.append((tok_tweet, pos, pos_conf, orig_tweet))
