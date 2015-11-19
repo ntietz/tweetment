@@ -443,21 +443,39 @@ def generate_features(record, w2c, cids, corpus_word_ng,
 
 
 def add_arguments(parser):
-  parser.add_argument('--input', type=str, required=True, help='Input file, which must be the output from Twokenize.')
+  parser.add_argument('--input', type=str, required=True, help='Input directory') # TODO: document the required format in the README file.
   parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
   parser.add_argument('--cache', type=str, default='./scripts/cache', help='The directory we cache downloaded files in.')
 
 
 def main(args):
-  with open(args.input) as f:
-    corpus = []
-    lexicons = load_lexicons(args.cache)
-    for line in f:
-      tok_tweet, pos, pos_conf, orig_tweet = line.strip().split('\t')
-      corpus.append((tok_tweet, pos, pos_conf, orig_tweet))
-    w2c, c2w, cids = load_clusters(args.clusters)
-    word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
-    for record in corpus:
-      generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
-    print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
+  # First, we want to train the classifier
+  training_gold = open(args.input + '/training.gold.tsv')
+  training_tokens = open(args.input + '/training.tokens')
+  dev_gold = open(args.input + '/dev.gold.tsv')
+  dev_input = open(args.input + '/dev.input.tsv')
+  dev_tokens = open(args.input + '/dev.tokens')
+
+  lexicons = load_lexicons(args.cache)
+
+  gold_lines = [line.strip() for line in training_gold]
+  token_lines = [line.strip() for line in training_tokens]
+  assert(len(gold_lines) == len(token_lines))
+  print "Loaded %s training examples." % len(gold_lines)
+
+  training_positive = []
+  training_negative = []
+  training_neutral = []
+
+  #with open(args.input) as f:
+  #  corpus = []
+  #  lexicons = load_lexicons(args.cache)
+  #  for line in f:
+  #    tok_tweet, pos, pos_conf, orig_tweet = line.strip().split('\t')
+  #    corpus.append((tok_tweet, pos, pos_conf, orig_tweet))
+  #  w2c, c2w, cids = load_clusters(args.clusters)
+  #  word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
+  #  for record in corpus:
+  #    generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
+  #  print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
 

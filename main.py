@@ -11,9 +11,9 @@ if args.train_sentiment:
   # Reparse with the arguments we want now
   sentiment.add_arguments(parser)
   args = parser.parse_args()
-  print args
 
   sentiment.main(args)
+
 else:
   print 'No options matched.'
 
