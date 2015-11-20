@@ -1,4 +1,58 @@
-This repo just contains my research code.
+Overview
+========
+
+This library contains a pre-trained sentiment classifier for Twitter data. It
+is an implementation of work done by Mohammad et al (information below).
+An overview of usage is provided below.
+
+**Contact**: Nicholas Tietz (ntietz@gmail.com)
+
+First Steps
+===========
+
+**Important: you must do this first, or the library will break.**
+You have to do this even if you are not training it yourself.
+
+You must download some lexicons. Most of these are done automatically by running
+my script, but there is one you must download yourself. First run the script:
+
+```
+cd scripts
+./download.sh
+```
+
+This will download and prepare the lexicons for you, and will also print some
+directions for the other lexicon. If this doesn't work, email me and I'll help.
+
+Basic Usage
+===========
+
+To classify tweets, you just need a file with one message per line:
+
+```
+<tweet1>
+<tweet2>
+...
+```
+
+Then you simply run classify.sh over this file:
+
+```
+./classify.sh tweets.txt
+```
+
+TODO
+
+Using as a Library
+==================
+
+TODO
+
+Training It Yourself
+====================
+
+TODO
+
 
 Licensing and Attribution
 =========================

@@ -39,3 +39,18 @@ cd ..
 rm -rf __MACOSX
 cd ..
 
+if [ ! -d "./cache" ]; then
+  echo 'Downloading the "Twokenize" software, this may take a while...'
+  mkdir cache
+  cd cache
+  curl https://ark-tweet-nlp.googlecode.com/files/ark-tweet-nlp-0.3.2.tgz > twokenizer.tgz
+  tar xfz twokenizer.tgz
+  mv ark-tweet-nlp-0.3.2 twokenizer
+  cd -
+fi
+
+if [ ! -e "./cache/clusters.csv" ]; then
+  echo 'Downloading the Twitter word clusters provided by CMU researchers...'
+  curl http://www.ark.cs.cmu.edu/TweetNLP/clusters/50mpaths2 > cache/clusters.csv
+fi
+
