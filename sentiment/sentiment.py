@@ -561,15 +561,3 @@ def main(args):
       fout.write('%s\t%s\t%s\t%s' % (col1, col2, label, tweet))
   print "Done outputting."
 
-  #with open(args.input) as f:
-  #  corpus = []
-  #  lexicons = load_lexicons(args.cache)
-  #  for line in f:
-  #    tok_tweet, pos, pos_conf, orig_tweet = line.strip().split('\t')
-  #    corpus.append((tok_tweet, pos, pos_conf, orig_tweet))
-  #  w2c, c2w, cids = load_clusters(args.clusters)
-  #  word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(corpus)
-  #  for record in corpus:
-  #    generate_features(record, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
-  #  print generate_features(corpus[2], w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
-
