@@ -546,7 +546,7 @@ def main(args):
     features = generate_features(tok_parts, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
     test_features.append(features)
 
-  classifier = svm.LinearSVC()
+  classifier = svm.LinearSVC(C=0.005)
   print "Created classifier. Training..."
   classifier.fit(training_features, training_classes)
   print "Trained classifier."
