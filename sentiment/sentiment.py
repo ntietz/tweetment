@@ -421,8 +421,6 @@ def get_lexicon_vec(tokens, lexicons):
     for lexicon in lexicon_names:
       vec += [scores[lexicon]['count'], scores[lexicon]['total'], scores[lexicon]['max'], scores[lexicon]['last']]
 
-  # TODO: bigrams
-
   return vec
 
 
