@@ -481,7 +481,8 @@ def generate_features(record, w2c, cids, corpus_word_ng,
 def add_arguments(parser):
   parser.add_argument('--input', type=str, required=True, help='Input directory') # TODO: document the required format in the README file.
   parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
-  parser.add_argument('--cache', type=str, default='./scripts/cache', help='The directory we cache downloaded files in.')
+  parser.add_argument('--cache', type=str, default='./cache', help='The directory we cache downloaded files in.')
+  parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file we should save the model to.')
 
 
 def main(args):
@@ -552,10 +553,14 @@ def main(args):
   test_predictions = classifier.predict(test_features)
   print "Finished prediction. Outputting now."
 
-  with open('predictions.txt', 'w') as fout:
+  with open('test_predictions.txt', 'w') as fout:
     for (prediction, line) in zip(test_predictions, test_input_lines):
       col1, col2, _, tweet = line.split('\t')
       label = int_to_label[prediction]
       fout.write('%s\t%s\t%s\t%s' % (col1, col2, label, tweet))
-  print "Done outputting."
+  print "Done outputting predictions."
+
+  print "Saving model..."
+  with open(args.savefile, 'w') as savefile:
+    pass # TODO: pickle the feature generators and output them
 
