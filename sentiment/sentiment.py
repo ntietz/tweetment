@@ -3,6 +3,7 @@ import itertools
 from sklearn import svm
 import string
 import tweetmotif.emoticons as emoticons
+import pickle
 
 # This list of POS tags is provided in the annotation guidelines for Twokenizer.
 # See here: http://www.ark.cs.cmu.edu/TweetNLP/annot_guidelines.pdf
@@ -562,5 +563,17 @@ def main(args):
 
   print "Saving model..."
   with open(args.savefile, 'w') as savefile:
-    pass # TODO: pickle the feature generators and output them
+    model = {
+        'label_to_int': label_to_int,
+        'int_to_label': int_to_label,
+        'word_ngrams': word_ngrams,
+        'nonc_ngrams': nonc_ngrams,
+        'char_ngrams': char_ngrams,
+        'lexicons': lexicons,
+        'w2c': w2c,
+        'c2w': c2w,
+        'cids': cids
+        'classifier': classifier
+        }
+    pickle.dumps(model, savefile)
 
