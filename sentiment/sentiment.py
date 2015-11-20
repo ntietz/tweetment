@@ -572,7 +572,7 @@ def main(args):
         'lexicons': lexicons,
         'w2c': w2c,
         'c2w': c2w,
-        'cids': cids
+        'cids': cids,
         'classifier': classifier
         }
     pickle.dumps(model, savefile)
