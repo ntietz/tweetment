@@ -14,6 +14,9 @@ if args.train_sentiment:
 
   sentiment.main(args)
 
+  print 'Exiting now...'
+  exit(0)
+
 else:
   print 'No options matched.'
 
