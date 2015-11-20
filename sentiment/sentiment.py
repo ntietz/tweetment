@@ -1,6 +1,6 @@
 import argparse
 import itertools
-import sklearn
+from sklearn import svm
 import string
 import tweetmotif.emoticons as emoticons
 
@@ -9,6 +9,9 @@ import tweetmotif.emoticons as emoticons
 pos_tags = ['N', 'O', '^', 'S', 'Z', 'V', 'A', 'R', '!', 'D', 'P', '&', 'T', 'X', '#', '@', '~', 'U', 'E', '$', ',', 'G', 'L', 'M', 'Y']
 pos_idxs = dict(zip(pos_tags, range(0, len(pos_tags))))
 
+w_ngram_counts = {}
+c_ngram_counts = {}
+n_ngram_counts = {}
 
 def corpus_ngrams(corpus):
   '''
@@ -34,6 +37,9 @@ def corpus_ngrams(corpus):
         if ng not in char_ngrams:
           char_ngrams[ng] = char_idx
           char_idx += 1
+          c_ngram_counts[ng] = 1
+        else:
+          c_ngram_counts[ng] += 1
     words = tweet.split()
     for length in word_lengths:
       for idx in range(0, len(words) - length + 1):
@@ -41,15 +47,47 @@ def corpus_ngrams(corpus):
         if tuple(ng) not in word_ngrams:
           word_ngrams[tuple(ng)] = word_idx
           word_idx += 1
+          w_ngram_counts[tuple(ng)] = 1
+        else:
+          w_ngram_counts[tuple(ng)] += 1
         for j in range(0, length):
           tmp = list(ng)
           tmp[j] = '*' # TODO: should this be a symbol like <*> ?
           if tuple(tmp) not in nonc_ngrams:
             nonc_ngrams[tuple(tmp)] = nonc_idx
             nonc_idx += 1
+            n_ngram_counts[tuple(tmp)] = 1
+          else:
+            n_ngram_counts[tuple(tmp)] += 1
+
+  smaller_word_ngrams = {}
+  word_idx = 0
+  for key in word_ngrams.keys():
+    if w_ngram_counts[key] > 1:
+      smaller_word_ngrams[key] = word_idx
+      word_idx += 1
+
+  smaller_nonc_ngrams = {}
+  nonc_idx = 0
+  for key in nonc_ngrams.keys():
+    if n_ngram_counts[key] > 1:
+      smaller_nonc_ngrams[key] = nonc_idx
+      nonc_idx += 1
+
+  smaller_char_ngrams = {}
+  char_idx = 0
+  for key in char_ngrams.keys():
+    if c_ngram_counts[key] > 1:
+      smaller_char_ngrams[key] = char_idx
+      char_idx += 1
+
+  print "Before removing single occurrence ngrams, we had %s ngrams." % (len(word_ngrams) + len(nonc_ngrams) + len(char_ngrams))
+  print "After reduction, we have %s ngrams." % (len(smaller_word_ngrams) + len(smaller_nonc_ngrams) + len(smaller_char_ngrams))
+  # NOTE: I shrunk this down because without shrinking, it is 1600k ngrams; afterwards, it is only 200k.
 
   #print "words: %s \n\n nonc: %s \n\n char: %s \n\n" % (word_ngrams, nonc_ngrams, char_ngrams)
-  return word_ngrams, nonc_ngrams, char_ngrams
+  #return word_ngrams, nonc_ngrams, char_ngrams
+  return smaller_word_ngrams, smaller_nonc_ngrams, smaller_char_ngrams
 
 
 def get_ngram_vec(tweet, corpus_word_ng, corpus_nonc_ng, corpus_char_ng):
@@ -453,19 +491,75 @@ def main(args):
   training_gold = open(args.input + '/training.gold.tsv')
   training_tokens = open(args.input + '/training.tokens')
   dev_gold = open(args.input + '/dev.gold.tsv')
-  dev_input = open(args.input + '/dev.input.tsv')
   dev_tokens = open(args.input + '/dev.tokens')
-
-  lexicons = load_lexicons(args.cache)
+  test_input = open(args.input + '/test.input.tsv')
+  test_tokens = open(args.input + '/test.tokens')
 
   gold_lines = [line.strip() for line in training_gold]
   token_lines = [line.strip() for line in training_tokens]
+  gold_lines += [line.strip() for line in dev_gold]
+  token_lines += [line.strip() for line in dev_tokens]
+  test_input_lines = [line for line in test_input]
+  test_token_lines = [line.strip() for line in test_tokens]
   assert(len(gold_lines) == len(token_lines))
   print "Loaded %s training examples." % len(gold_lines)
+
+  label_to_int = {'positive': 0, 'neutral': 1, 'negative': 2}
+  int_to_label = {0: 'positive', 1: 'neutral', 2: 'negative'}
 
   training_positive = []
   training_negative = []
   training_neutral = []
+
+  training_corpus = map(lambda x: x.split('\t'), token_lines)
+  word_ngrams, nonc_ngrams, char_ngrams = corpus_ngrams(training_corpus)
+  print "Generated ngram encodings for training corpus."
+
+  print "Contains %s @ mentions." % len(filter(lambda x: len(x) == 1 and x[0][0] == '@', word_ngrams.keys()))
+  #print "Contains %s used only once." % len(filter(lambda x: ngram_counts[x] == 1, word_ngrams.keys()))
+  print "Contains %s URLs." % len(filter(lambda x: len(x) == 1 and x[0][:4] == 'http', word_ngrams.keys()))
+
+  lexicons = load_lexicons(args.cache)
+  print "Loaded the lexicons."
+
+  w2c, c2w, cids = load_clusters(args.clusters)
+  print "Loaded the clusters."
+
+  training_features = []
+  training_classes = []
+
+  for gold_line, tokenized_line in zip(gold_lines, token_lines):
+    _, _, label, _ = gold_line.split('\t')
+    tok_parts = tokenized_line.split('\t')
+    tok_tweet, pos, pos_conf, orig_tweet = tok_parts
+
+    features = generate_features(tok_parts, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
+    training_features.append(features)
+    training_classes.append(label_to_int[label])
+
+    if len(training_features) % 1000 == 0:
+      print "Loaded %s feature vectors." % len(training_features)
+
+  test_features = []
+  for tokenized_line in test_token_lines:
+    tok_parts = tokenized_line.split('\t')
+    features = generate_features(tok_parts, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
+    test_features.append(features)
+
+  classifier = svm.LinearSVC()
+  print "Created classifier. Training..."
+  classifier.fit(training_features, training_classes)
+  print "Trained classifier."
+  print "Predicting %s test cases." % len(test_features)
+  test_predictions = classifier.predict(test_features)
+  print "Finished prediction. Outputting now."
+
+  with open('predictions.txt', 'w') as fout:
+    for (prediction, line) in zip(test_predictions, test_input_lines):
+      col1, col2, _, tweet = line.split('\t')
+      label = int_to_label[prediction]
+      fout.write('%s\t%s\t%s\t%s' % (col1, col2, label, tweet))
+  print "Done outputting."
 
   #with open(args.input) as f:
   #  corpus = []
