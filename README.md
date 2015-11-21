@@ -51,6 +51,7 @@ cd scripts
 This will download and prepare the lexicons for you, and will also print some
 directions for the other lexicon. If this doesn't work, email me and I'll help.
 
+TODO
 
 
 Licensing and Attribution

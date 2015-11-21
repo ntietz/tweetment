@@ -4,8 +4,12 @@
 # It takes in two arguments, the input path and output path.
 
 INPUT=`pwd`/$1
-OUTPUT=`pwd`/$2
+TMP=/tmp/toktweets
 
 cd cache/twokenizer
-./runTagger.sh $INPUT > $OUTPUT
+./runTagger.sh $INPUT > $TMP
+cd -
+
+python main.py --classify --savefile ./cache/model.pkl --input $TMP
+rm $TMP
 

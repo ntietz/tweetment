@@ -11,12 +11,16 @@ if __name__ == '__main__':
     print 'Training sentiment classifier...'
 
     # Reparse with the arguments we want now
-    sentiment.add_arguments(parser)
+    sentiment.add_train_arguments(parser)
     args = parser.parse_args()
 
-    sentiment.main(args)
+    sentiment.train(args)
 
-    exit(0)
+  elif args.classify:
+    sentiment.add_classify_arguments(parser)
+    args = parser.parse_args()
+
+    sentiment.classify(args)
 
   else:
     print 'No options matched.'
