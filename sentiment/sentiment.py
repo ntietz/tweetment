@@ -575,5 +575,5 @@ def main(args):
         'cids': cids,
         'classifier': classifier
         }
-    pickle.dumps(model, savefile)
+    pickle.dump(model, savefile)
 
