@@ -596,7 +596,6 @@ def classify(args):
       features.append(generate_features(tok_parts, model['w2c'], model['cids'], model['word_ngrams'], model['nonc_ngrams'], model['char_ngrams'], model['lexicons']))
       tweets.append(tok_parts[3])
 
-  model['classifier'].classes_ = [0,1,2]
   predictions = model['classifier'].predict(features)
   for p, tweet in zip(predictions, tweets):
     label = model['int_to_label'][p]
