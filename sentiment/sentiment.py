@@ -479,14 +479,18 @@ def generate_features(record, w2c, cids, corpus_word_ng,
   return features
 
 
-def add_arguments(parser):
+def add_train_arguments(parser):
   parser.add_argument('--input', type=str, required=True, help='Input directory') # TODO: document the required format in the README file.
   parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
   parser.add_argument('--cache', type=str, default='./cache', help='The directory we cache downloaded files in.')
   parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file we should save the model to.')
 
 
-def main(args):
+def add_classify_arguments(parser):
+  parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file to load the model from.')
+  parser.add_argument('--input', type=str, required=True, help='Input file')
+
+def train(args):
   # First, we want to train the classifier
   training_gold = open(args.input + '/training.gold.tsv')
   training_tokens = open(args.input + '/training.tokens')
@@ -562,7 +566,7 @@ def main(args):
   print "Done outputting predictions."
 
   print "Saving model..."
-  with open(args.savefile, 'w') as savefile:
+  with open(args.savefile, 'wb') as savefile:
     model = {
         'label_to_int': label_to_int,
         'int_to_label': int_to_label,
@@ -576,4 +580,25 @@ def main(args):
         'classifier': classifier
         }
     pickle.dump(model, savefile)
+
+def classify(args):
+  with open(args.savefile, 'rb') as savefile:
+    model = pickle.load(savefile)
+
+  classifier = model['classifier']
+
+  features = []
+  tweets = []
+
+  with open(args.input) as f:
+    for line in f:
+      tok_parts = line.split('\t')
+      features.append(generate_features(tok_parts, model['w2c'], model['cids'], model['word_ngrams'], model['nonc_ngrams'], model['char_ngrams'], model['lexicons']))
+      tweets.append(tok_parts[3])
+
+  model['classifier'].classes_ = [0,1,2]
+  predictions = model['classifier'].predict(features)
+  for p, tweet in zip(predictions, tweets):
+    label = model['int_to_label'][p]
+    print '%s\t%s' % (label, tweet)
 
