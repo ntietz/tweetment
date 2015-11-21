@@ -489,6 +489,7 @@ def add_train_arguments(parser):
 def add_classify_arguments(parser):
   parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file to load the model from.')
   parser.add_argument('--input', type=str, required=True, help='Input file')
+  parser.add_argument('--output', type=str, required=True, help='Output file')
 
 def train(args):
   # First, we want to train the classifier
@@ -597,7 +598,8 @@ def classify(args):
       tweets.append(tok_parts[3])
 
   predictions = model['classifier'].predict(features)
-  for p, tweet in zip(predictions, tweets):
-    label = model['int_to_label'][p]
-    print '%s\t%s' % (label, tweet)
+  with open(args.output, 'w') as f:
+    for p, tweet in zip(predictions, tweets):
+      label = model['int_to_label'][p]
+      f.write('%s\t%s' % (label, tweet))
 
