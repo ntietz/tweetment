@@ -10,6 +10,14 @@ An overview of usage is provided below.
 Basic Usage
 ===========
 
+Requirements
+------------
+
+Requires **scikit-learn** version 0.17. Not tested with any others.
+
+Usage
+-----
+
 To classify tweets, you just need a file with one message per line:
 
 ```
@@ -21,7 +29,7 @@ To classify tweets, you just need a file with one message per line:
 Then you simply run classify.sh over this file:
 
 ```
-./classify.sh tweets.txt
+./classify.sh tweets.txt results.txt
 ```
 
 TODO
