@@ -3,9 +3,14 @@ Overview
 
 This library contains a pre-trained sentiment classifier for Twitter data. It
 is an implementation of work done by Mohammad et al (information below).
-An overview of usage is provided below.
+An overview of usage is provided below. An overview of the technical details
+can be found in the paper, referenced below.
 
-**Contact**: Nicholas Tietz (ntietz@gmail.com)
+Note that this is not an example of superb engineering; it is just research
+code to serve a purpose, and could definitely be improved in terms of
+organization and efficiency, but it does the job for now.
+
+**Contact**: Nicholas Tietz (me@ntietz.com)
 
 Basic Usage
 ===========
@@ -37,7 +42,11 @@ TODO
 Using as a Library
 ==================
 
-TODO
+**TODO**
+
+Instructions for this and code samples are coming soon! If you want to use this
+and instructions aren't here yet, **please** email me or open an issue and I
+will complete this ASAP.
 
 Training It Yourself
 ====================
@@ -59,8 +68,11 @@ cd scripts
 This will download and prepare the lexicons for you, and will also print some
 directions for the other lexicon. If this doesn't work, email me and I'll help.
 
-TODO
+**TODO**
 
+Instructions for this and code samples are coming soon! If you want to use this
+and instructions aren't here yet, **please** email me or open an issue and I
+will complete this ASAP.
 
 Licensing and Attribution
 =========================
@@ -82,11 +94,11 @@ Sentiment
 ---------
 
 The Sentiment library was developed by Nicholas Tietz. I want to license it
-under the Apache License 2.0: http://www.apache.org/licenses/LICENSE-2.0.html
+under the GPL but I do not know if I am permitted by the university's policy.
 For now, do not assume that that is true. I am waiting to find out the policy
 of our university on software licenses.
 
-Copyright 2015 (It is currently unclear to me whether I hold the copyright or the university does, so I am leaving that out for now).
+Copyright 2015 (Either Nicholas Tietz or The Ohio State University; I am waiting to hear what the university's policy is)
 
 This library is an implementation of work done by Saif M. Mohammad, Svetlana
 Kiritchenko, and Xiaodan Zhu. Please see their paper "NRC-Canada: Building the
