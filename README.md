@@ -37,16 +37,14 @@ Then you simply run classify.sh over this file:
 ./classify.sh tweets.txt results.txt
 ```
 
-TODO
+The results are printed out into the file specified. That's it!
 
 Using as a Library
 ==================
 
-**TODO**
-
-Instructions for this and code samples are coming soon! If you want to use this
-and instructions aren't here yet, **please** email me or open an issue and I
-will complete this ASAP.
+**TODO**: Instructions for this and code samples are coming soon! If you want
+to use this and instructions aren't here yet, **please** email me or open an
+issue and I will complete this ASAP.
 
 Training It Yourself
 ====================
@@ -68,11 +66,9 @@ cd scripts
 This will download and prepare the lexicons for you, and will also print some
 directions for the other lexicon. If this doesn't work, email me and I'll help.
 
-**TODO**
-
-Instructions for this and code samples are coming soon! If you want to use this
-and instructions aren't here yet, **please** email me or open an issue and I
-will complete this ASAP.
+**TODO**: Instructions for this and code samples are coming soon! If you want
+to use this and instructions aren't here yet, **please** email me or open an
+issue and I will complete this ASAP.
 
 Licensing and Attribution
 =========================
