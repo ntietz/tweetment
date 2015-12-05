@@ -4,18 +4,14 @@
 # It takes in two arguments, the input path and output path.
 
 if [ $# -lt 2 ]; then
-  echo "Usage: ./classify.sh <inputfile> <outputfile>"
+  echo "Usage: ./classify.sh <model> <inputfile> <outputfile>"
   exit -1
 fi
 
-INPUT=`pwd`/$1
-OUTPUT=$2
-#TMP=/tmp/toktweets
+MODEL=$1
+INPUT=$2
+OUTPUT=$3
 
-#cd cache/twokenizer
-#./runTagger.sh $INPUT > $TMP
-#cd -
-
-python main.py --classify --savefile ./cache/model.pkl --input $INPUT --output $OUTPUT
+python main.py --classify --savefile $MODEL --input $INPUT --output $OUTPUT
 rm $TMP
 
