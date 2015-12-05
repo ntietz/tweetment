@@ -210,11 +210,11 @@ def get_cluster_mem_vec(cids, w2c, words):
   return vec
 
 
-def get_pos_vec(pos):
-  vec = [0]*len(pos_tags)
-  for tag in pos:
-    vec[pos_idxs[tag]] += 1
-  return vec
+#def get_pos_vec(pos):
+#  vec = [0]*len(pos_tags)
+#  for tag in pos:
+#    vec[pos_idxs[tag]] += 1
+#  return vec
 
 
 def load_lexicons(cache_dir):
@@ -436,7 +436,7 @@ def generate_features(record, w2c, cids, corpus_word_ng,
   '''
     Our features are: (+ done, / wip, - todo)
     + allcaps
-    + pos
+    - pos
     + hashtags
     + punctuation
     + elongated words
@@ -463,7 +463,7 @@ def generate_features(record, w2c, cids, corpus_word_ng,
   num_seq_question, num_seq_exclaim, num_seq_both = num_contiguous_question_exclaim(tweet)
   cluster_mem_vec = get_cluster_mem_vec(cids, w2c, words)
 
-  pos_vec = get_pos_vec(pos.split())
+  #pos_vec = get_pos_vec(pos.split())
 
   ngram_w_vec, ngram_n_vec, ngram_c_vec = get_ngram_vec(tweet, corpus_word_ng,
       corpus_nonc_ng, corpus_char_ng)

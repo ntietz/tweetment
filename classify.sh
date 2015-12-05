@@ -10,12 +10,12 @@ fi
 
 INPUT=`pwd`/$1
 OUTPUT=$2
-TMP=/tmp/toktweets
+#TMP=/tmp/toktweets
 
-cd cache/twokenizer
-./runTagger.sh $INPUT > $TMP
-cd -
+#cd cache/twokenizer
+#./runTagger.sh $INPUT > $TMP
+#cd -
 
-python main.py --classify --savefile ./cache/model.pkl --input $TMP --output $OUTPUT
+python main.py --classify --savefile ./cache/model.pkl --input $INPUT --output $OUTPUT
 rm $TMP
 
