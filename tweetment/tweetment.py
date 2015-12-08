@@ -19,11 +19,10 @@ class SentimentClassifier:
     if saved_model is not None:
       with open(saved_model, 'rb') as savefile:
         self.model = pickle.load(savefile)
+        self.classifier = self.model['classifier']
 
 
   def classify_file(self, in_name, out_name):
-    classifier = self.model['classifier']
-
     features = []
     tweets = []
 
@@ -33,14 +32,18 @@ class SentimentClassifier:
         features.append(self.generate_features(tweet, self.model['w2c'], self.model['cids'], self.model['word_ngrams'], self.model['nonc_ngrams'], self.model['char_ngrams'], self.model['lexicons']))
         tweets.append(tweet)
 
-    predictions = self.model['classifier'].predict(features)
+    predictions = self.classifier.predict(features)
     with open(out_name, 'w') as f:
       for p, tweet in zip(predictions, tweets):
         label = self.model['int_to_label'][p]
         f.write('%s\t%s' % (label, tweet))
 
 
-  # TODO: add non-file classify function
+  def classify(self, tweet):
+    features = self.generate_features(tweet, self.model['w2c'], self.model['cids'], self.model['word_ngrams'], self.model['nonc_ngrams'], self.model['char_ngrams'], self.model['lexicons'])
+    predictions = self.classifier.predict([features])
+    return self.model['int_to_label'][predictions[0]]
+
 
   def generate_features(self, tweet, w2c, cids, corpus_word_ng,
       corpus_nonc_ng, corpus_char_ng, lexicons):
