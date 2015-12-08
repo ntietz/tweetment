@@ -30,6 +30,9 @@ Requires **scikit-learn** version 0.17. Not tested with any others.
 You must download the model from the latest release. Download the file
 **model.pkl** and place it wherever you'd like.
 
+Go over to the [release page](https://github.com/ntietz/tweetment/releases) to
+get the latest.
+
 Usage
 -----
 
