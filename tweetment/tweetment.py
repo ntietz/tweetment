@@ -539,7 +539,7 @@ def train(args):
 
   test_features = []
   for tokenized_line in test_token_lines:
-    tok_parts = tokenized_line.split('\t')[0]
+    tweet = tokenized_line.split('\t')[3]
     features = generate_features(tweet, w2c, cids, word_ngrams, nonc_ngrams, char_ngrams, lexicons)
     test_features.append(features)
 
@@ -593,5 +593,5 @@ def classify(args):
   with open(args.output, 'w') as f:
     for p, tweet in zip(predictions, tweets):
       label = model['int_to_label'][p]
-      f.write('%s\t%s\n' % (label, tweet))
+      f.write('%s\t%s' % (label, tweet))
 
