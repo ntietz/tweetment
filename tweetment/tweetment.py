@@ -593,5 +593,5 @@ def classify(args):
   with open(args.output, 'w') as f:
     for p, tweet in zip(predictions, tweets):
       label = model['int_to_label'][p]
-      f.write('%s\t%s' % (label, tweet))
+      f.write('%s\t%s\n' % (label, tweet))
 
