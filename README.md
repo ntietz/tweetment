@@ -65,9 +65,44 @@ That's it!
 Using as a Library
 ==================
 
-**TODO**: Instructions for this and code samples are coming soon! If you want
-to use this and instructions aren't here yet, **please** email me or open an
-issue and I will complete this ASAP.
+Usage as a library is really simple. Basically, you just construct a classifier
+and tell it where to load the model from, then you can directly classify
+tweets without preprocessing them.
+
+Here's a working example of how to do this:
+
+```
+import tweetment
+import datetime
+
+print "%s: Loading model." % (datetime.datetime.now().time())
+classifier = tweetment.SentimentClassifier('./cache/model.pkl')
+print "%s: Model is loaded." % (datetime.datetime.now().time())
+
+for line in open('example_tweets.txt'):
+  tweet = line.strip()
+  sentiment = classifier.classify(tweet)
+  print "%s: Classified tweet as %s." % (datetime.datetime.now().time(), sentiment)
+```
+
+Following is the expected output, using my 10 sample tweets. The times may vary
+on your machine, but are provided here to give you an idea of the speed of
+loading vs the speed of classification.
+
+```
+17:39:05.610987: Loading model.
+17:39:27.308373: Model is loaded.
+17:39:27.342119: Classified tweet as positive.
+17:39:27.371931: Classified tweet as neutral.
+17:39:27.397071: Classified tweet as positive.
+17:39:27.427360: Classified tweet as negative.
+17:39:27.453307: Classified tweet as negative.
+17:39:27.480550: Classified tweet as neutral.
+17:39:27.507628: Classified tweet as positive.
+17:39:27.534367: Classified tweet as neutral.
+17:39:27.561039: Classified tweet as positive.
+17:39:27.590164: Classified tweet as neutral.
+```
 
 Training It Yourself
 ====================
@@ -109,7 +144,7 @@ TweetMotif is licensed under the Apache License 2.0: http://www.apache.org/licen
 
 Copyright Brendan O'Connor, Michel Krieger, and David Ahn, 2009-2010
 
-Sentiment
+Tweetment
 ---------
 
 The Sentiment library was developed by Nicholas Tietz. I want to license it
