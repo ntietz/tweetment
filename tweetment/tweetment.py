@@ -595,3 +595,10 @@ def classify(args):
       label = model['int_to_label'][p]
       f.write('%s\t%s' % (label, tweet))
 
+class SentimentClassifier:
+  '''
+    This class contains a sentiment classifier for tweets.
+  '''
+  def __init__(self):
+    pass
+
