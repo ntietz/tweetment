@@ -35,7 +35,8 @@ def corpus_ngrams(corpus):
   nonc_idx = 0
   char_idx = 0
 
-  for tweet in corpus:
+  for record in corpus:
+    tweet = record[0]
     for length in char_lengths:
       for idx in range(0, len(tweet) - length + 1):
         ng = tweet[idx : idx+length]
