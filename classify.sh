@@ -13,5 +13,4 @@ INPUT=$2
 OUTPUT=$3
 
 python main.py --classify --savefile $MODEL --input $INPUT --output $OUTPUT
-rm $TMP
 
