@@ -56,6 +56,10 @@ follows (but tab separated):
 ...
 ```
 
+You will notice that this takes some time. This is mostly the startup time to
+load the saved model off the disk. The actual classification of tweets is not
+too expensive.
+
 That's it!
 
 Using as a Library

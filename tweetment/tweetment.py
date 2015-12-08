@@ -10,46 +10,37 @@ class SentimentClassifier:
   '''
     This class contains a sentiment classifier for tweets.
   '''
-  def __init__(self, args, parser):
-    if args.train:
-      parser.add_argument('--input', type=str, required=True, help='Input directory')
-      parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
-      parser.add_argument('--cache', type=str, default='./cache', help='The directory we cache downloaded files in.')
-      parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file we should save the model to.')
-    else:
-      parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file to load the model from.')
-      parser.add_argument('--input', type=str, required=True, help='Input file')
-      parser.add_argument('--output', type=str, required=True, help='Output file')
-
-    self.args = parser.parse_args()
-    print self.args
+  def __init__(self, saved_model=None):
 
     self.w_ngram_counts = {}
     self.c_ngram_counts = {}
     self.n_ngram_counts = {}
 
-    if self.args.savefile:
-      with open(self.args.savefile, 'rb') as savefile:
+    if saved_model is not None:
+      with open(saved_model, 'rb') as savefile:
         self.model = pickle.load(savefile)
 
-  def classify(self):
+
+  def classify_file(self, in_name, out_name):
     classifier = self.model['classifier']
 
     features = []
     tweets = []
 
-    with open(self.args.input) as f:
+    with open(in_name) as f:
       for line in f:
         tweet = line.split('\t')[0]
         features.append(self.generate_features(tweet, self.model['w2c'], self.model['cids'], self.model['word_ngrams'], self.model['nonc_ngrams'], self.model['char_ngrams'], self.model['lexicons']))
         tweets.append(tweet)
 
     predictions = self.model['classifier'].predict(features)
-    with open(self.args.output, 'w') as f:
+    with open(out_name, 'w') as f:
       for p, tweet in zip(predictions, tweets):
         label = self.model['int_to_label'][p]
         f.write('%s\t%s' % (label, tweet))
 
+
+  # TODO: add non-file classify function
 
   def generate_features(self, tweet, w2c, cids, corpus_word_ng,
       corpus_nonc_ng, corpus_char_ng, lexicons):
@@ -505,14 +496,14 @@ class SentimentClassifier:
     return lexicons
 
 
-  def train(self, args):
+  def train(self, inputdir, cache, clusters, modelout):
     # First, we want to train the classifier
-    training_gold = open(args.input + '/training.gold.tsv')
-    training_tokens = open(args.input + '/training.tokens')
-    dev_gold = open(args.input + '/dev.gold.tsv')
-    dev_tokens = open(args.input + '/dev.tokens')
-    test_input = open(args.input + '/test.input.tsv')
-    test_tokens = open(args.input + '/test.tokens')
+    training_gold = open(inputdir + '/training.gold.tsv')
+    training_tokens = open(inputdir + '/training.tokens')
+    dev_gold = open(inputdir + '/dev.gold.tsv')
+    dev_tokens = open(inputdir + '/dev.tokens')
+    test_input = open(inputdir + '/test.input.tsv')
+    test_tokens = open(inputdir + '/test.tokens')
 
     gold_lines = [line.strip() for line in training_gold]
     token_lines = [line.strip() for line in training_tokens]
@@ -538,10 +529,10 @@ class SentimentClassifier:
     #print "Contains %s used only once." % len(filter(lambda x: ngram_counts[x] == 1, word_ngrams.keys()))
     print "Contains %s URLs." % len(filter(lambda x: len(x) == 1 and x[0][:4] == 'http', word_ngrams.keys()))
 
-    lexicons = self._load_lexicons(args.cache)
+    lexicons = self._load_lexicons(cache)
     print "Loaded the lexicons."
 
-    w2c, c2w, cids = self._load_clusters(args.clusters)
+    w2c, c2w, cids = self._load_clusters(clusters)
     print "Loaded the clusters."
 
     training_features = []
@@ -580,7 +571,7 @@ class SentimentClassifier:
     print "Done outputting predictions."
 
     print "Saving model..."
-    with open(args.savefile, 'wb') as savefile:
+    with open(modelout, 'wb') as savefile:
       model = {
           'label_to_int': label_to_int,
           'int_to_label': int_to_label,
