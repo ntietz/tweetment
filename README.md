@@ -10,8 +10,8 @@ Note that this is not an example of superb engineering; it is just research
 code to serve a purpose, and could definitely be improved in terms of
 organization and efficiency, but it does the job for now.
 
-Right now, the library achieves an F1 score of 61.96 on the SemEval-2013 B
-dataset. The paper's implementation achieved an F1 score of 69.16. Obviously,
+Right now, the library achieves an F1 score of 62.41 on the SemEval-2013 B
+dataset. The paper's implementation achieved an F1 score of 69.02. Obviously,
 this is better performance. I have omitted two features: parts of speech and
 negation. I will add negation in the future. Parts of speech was omitted due to
 lack of a Python library for doing this. Again, getting this to work is future
