@@ -10,6 +10,13 @@ Note that this is not an example of superb engineering; it is just research
 code to serve a purpose, and could definitely be improved in terms of
 organization and efficiency, but it does the job for now.
 
+Right now, the library achieves an F1 score of 61.96 on the SemEval-2013 B
+dataset. The paper's implementation achieved an F1 score of 69.16. Obviously,
+this is better performance. I have omitted two features: parts of speech and
+negation. I will add negation in the future. Parts of speech was omitted due to
+lack of a Python library for doing this. Again, getting this to work is future
+work.
+
 **Contact**: Nicole Tietz-Sokolskaya (me@ntietz.com)
 
 Basic Usage
@@ -19,6 +26,9 @@ Requirements
 ------------
 
 Requires **scikit-learn** version 0.17. Not tested with any others.
+
+You must download the model from the latest release. Download the file
+**model.pkl** and place it wherever you'd like.
 
 Usage
 -----
@@ -34,10 +44,19 @@ To classify tweets, you just need a file with one message per line:
 Then you simply run classify.sh over this file:
 
 ```
-./classify.sh tweets.txt results.txt
+./classify.sh model.pkl tweets.txt results.txt
 ```
 
-The results are printed out into the file specified. That's it!
+The results are printed out into the file specified. The output format is as
+follows (but tab separated):
+
+```
+<sentiment1> <tweet1>
+<sentiment2> <tweet2>
+...
+```
+
+That's it!
 
 Using as a Library
 ==================
