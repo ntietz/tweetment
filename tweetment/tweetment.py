@@ -285,9 +285,9 @@ class SentimentClassifier:
           if ng not in char_ngrams:
             char_ngrams[ng] = char_idx
             char_idx += 1
-            c_ngram_counts[ng] = 1
+            self.c_ngram_counts[ng] = 1
           else:
-            c_ngram_counts[ng] += 1
+            self.c_ngram_counts[ng] += 1
       words = self._tokenize(tweet)
       for length in word_lengths:
         for idx in range(0, len(words) - length + 1):
@@ -295,37 +295,37 @@ class SentimentClassifier:
           if tuple(ng) not in word_ngrams:
             word_ngrams[tuple(ng)] = word_idx
             word_idx += 1
-            w_ngram_counts[tuple(ng)] = 1
+            self.w_ngram_counts[tuple(ng)] = 1
           else:
-            w_ngram_counts[tuple(ng)] += 1
+            self.w_ngram_counts[tuple(ng)] += 1
           for j in range(0, length):
             tmp = list(ng)
             tmp[j] = '*' # TODO: should this be a symbol like <*> ?
             if tuple(tmp) not in nonc_ngrams:
               nonc_ngrams[tuple(tmp)] = nonc_idx
               nonc_idx += 1
-              n_ngram_counts[tuple(tmp)] = 1
+              self.n_ngram_counts[tuple(tmp)] = 1
             else:
-              n_ngram_counts[tuple(tmp)] += 1
+              self.n_ngram_counts[tuple(tmp)] += 1
 
     smaller_word_ngrams = {}
     word_idx = 0
     for key in word_ngrams.keys():
-      if w_ngram_counts[key] > 1:
+      if self.w_ngram_counts[key] > 1:
         smaller_word_ngrams[key] = word_idx
         word_idx += 1
 
     smaller_nonc_ngrams = {}
     nonc_idx = 0
     for key in nonc_ngrams.keys():
-      if n_ngram_counts[key] > 1:
+      if self.n_ngram_counts[key] > 1:
         smaller_nonc_ngrams[key] = nonc_idx
         nonc_idx += 1
 
     smaller_char_ngrams = {}
     char_idx = 0
     for key in char_ngrams.keys():
-      if c_ngram_counts[key] > 1:
+      if self.c_ngram_counts[key] > 1:
         smaller_char_ngrams[key] = char_idx
         char_idx += 1
 
