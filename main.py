@@ -1,5 +1,5 @@
 import argparse
-import sentiment
+import tweetment
 
 if __name__ == '__main__':
   parser = argparse.ArgumentParser(description='Runs the response generator code.')
@@ -11,16 +11,16 @@ if __name__ == '__main__':
     print 'Training sentiment classifier...'
 
     # Reparse with the arguments we want now
-    sentiment.add_train_arguments(parser)
+    tweetment.add_train_arguments(parser)
     args = parser.parse_args()
 
-    sentiment.train(args)
+    tweetment.train(args)
 
   elif args.classify:
-    sentiment.add_classify_arguments(parser)
+    tweetment.add_classify_arguments(parser)
     args = parser.parse_args()
 
-    sentiment.classify(args)
+    tweetment.classify(args)
 
   else:
     print 'No options matched.'
