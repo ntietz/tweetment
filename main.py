@@ -7,20 +7,20 @@ if __name__ == '__main__':
   parser.add_argument('--train', action='store_true', help='Run the tweet sentiment classifier trainer')
   args, uknowns = parser.parse_known_args()
 
+  # The classifier will add any of the other arguments it needs.
+  classifier = tweetment.SentimentClassifier(args, parser)
+
   if args.train:
     print 'Training sentiment classifier...'
 
-    # Reparse with the arguments we want now
-    tweetment.add_train_arguments(parser)
-    args = parser.parse_args()
+    ## Reparse with the arguments we want now
+    #tweetment.add_train_arguments(parser)
+    #args = parser.parse_args()
 
-    tweetment.train(args)
+    #tweetment.train(args)
 
   elif args.classify:
-    tweetment.add_classify_arguments(parser)
-    args = parser.parse_args()
-
-    tweetment.classify(args)
+    classifier.classify()
 
   else:
     print 'No options matched.'

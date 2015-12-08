@@ -6,15 +6,6 @@ import tweetmotif.twokenize
 import tweetmotif.emoticons as emoticons
 import pickle
 
-# This list of POS tags is provided in the annotation guidelines for Twokenizer.
-# See here: http://www.ark.cs.cmu.edu/TweetNLP/annot_guidelines.pdf
-pos_tags = ['N', 'O', '^', 'S', 'Z', 'V', 'A', 'R', '!', 'D', 'P', '&', 'T', 'X', '#', '@', '~', 'U', 'E', '$', ',', 'G', 'L', 'M', 'Y']
-pos_idxs = dict(zip(pos_tags, range(0, len(pos_tags))))
-
-w_ngram_counts = {}
-c_ngram_counts = {}
-n_ngram_counts = {}
-
 def tokenize(tweet):
   t = tweetmotif.twokenize.tokenize(tweet)
   return t
@@ -470,20 +461,6 @@ def generate_features(tweet, w2c, cids, corpus_word_ng,
       ngram_c_vec + emoticon_vec + lexicon_vec
   return features
 
-
-def add_train_arguments(parser):
-  parser.add_argument('--input', type=str, required=True, help='Input directory') # TODO: document the required format in the README file.
-  parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
-  parser.add_argument('--cache', type=str, default='./cache', help='The directory we cache downloaded files in.')
-  parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file we should save the model to.')
-
-
-def add_classify_arguments(parser):
-  parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file to load the model from.')
-  parser.add_argument('--input', type=str, required=True, help='Input file')
-  parser.add_argument('--output', type=str, required=True, help='Output file')
-
-
 def train(args):
   # First, we want to train the classifier
   training_gold = open(args.input + '/training.gold.tsv')
@@ -574,31 +551,47 @@ def train(args):
         }
     pickle.dump(model, savefile)
 
-def classify(args):
-  with open(args.savefile, 'rb') as savefile:
-    model = pickle.load(savefile)
-
-  classifier = model['classifier']
-
-  features = []
-  tweets = []
-
-  with open(args.input) as f:
-    for line in f:
-      tweet = line.split('\t')[0]
-      features.append(generate_features(tweet, model['w2c'], model['cids'], model['word_ngrams'], model['nonc_ngrams'], model['char_ngrams'], model['lexicons']))
-      tweets.append(tweet)
-
-  predictions = model['classifier'].predict(features)
-  with open(args.output, 'w') as f:
-    for p, tweet in zip(predictions, tweets):
-      label = model['int_to_label'][p]
-      f.write('%s\t%s' % (label, tweet))
-
 class SentimentClassifier:
   '''
     This class contains a sentiment classifier for tweets.
   '''
-  def __init__(self):
-    pass
+  def __init__(self, args, parser):
+    if args.train:
+      parser.add_argument('--input', type=str, required=True, help='Input directory')
+      parser.add_argument('--clusters', type=str, required=True, help='The file containing the clusters data.')
+      parser.add_argument('--cache', type=str, default='./cache', help='The directory we cache downloaded files in.')
+      parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file we should save the model to.')
+    else:
+      parser.add_argument('--savefile', type=str, default='./cache/model.pkl', help='The file to load the model from.')
+      parser.add_argument('--input', type=str, required=True, help='Input file')
+      parser.add_argument('--output', type=str, required=True, help='Output file')
+
+    self.args = parser.parse_args()
+    print self.args
+
+    self.w_ngram_counts = {}
+    self.c_ngram_counts = {}
+    self.n_ngram_counts = {}
+
+    if self.args.savefile:
+      with open(self.args.savefile, 'rb') as savefile:
+        self.model = pickle.load(savefile)
+
+  def classify(self):
+    classifier = self.model['classifier']
+
+    features = []
+    tweets = []
+
+    with open(self.args.input) as f:
+      for line in f:
+        tweet = line.split('\t')[0]
+        features.append(generate_features(tweet, self.model['w2c'], self.model['cids'], self.model['word_ngrams'], self.model['nonc_ngrams'], self.model['char_ngrams'], self.model['lexicons']))
+        tweets.append(tweet)
+
+    predictions = self.model['classifier'].predict(features)
+    with open(self.args.output, 'w') as f:
+      for p, tweet in zip(predictions, tweets):
+        label = self.model['int_to_label'][p]
+        f.write('%s\t%s' % (label, tweet))
 
