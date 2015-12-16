@@ -5,6 +5,7 @@ import string
 import tweetmotif.twokenize
 import tweetmotif.emoticons as emoticons
 import pickle
+import sys
 
 class SentimentClassifier:
   '''
@@ -28,6 +29,9 @@ class SentimentClassifier:
 
     with open(in_name) as f:
       for line in f:
+        if len(line.strip()) == 0:
+          sys.stderr.write('WARNING: blank line in input detected. Skipping it.\n')
+          continue
         tweet = line.split('\t')[0]
         features.append(self.generate_features(tweet, self.model['w2c'], self.model['cids'], self.model['word_ngrams'], self.model['nonc_ngrams'], self.model['char_ngrams'], self.model['lexicons']))
         tweets.append(tweet)
