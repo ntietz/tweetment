@@ -521,7 +521,7 @@ class SentimentClassifier:
     assert(len(gold_lines) == len(token_lines))
     print "Loaded %s training examples." % len(gold_lines)
 
-    label_to_int = {'positive': 0, 'neutral': 1, 'negative': 2}
+    label_to_int = {'"positive"': 0, '"neutral"': 1, '"objective-OR-neutral"': 1, '"negative"': 2}
     int_to_label = {0: 'positive', 1: 'neutral', 2: 'negative'}
 
     training_positive = []

@@ -117,19 +117,37 @@ First Steps
 You have to do this even if you are not training it yourself.
 
 You must download some lexicons. Most of these are done automatically by running
-my script, but there is one you must download yourself. First run the script:
+my script, but there is one you must download yourself (instructions will be printed at the end). First run the script:
 
 ```
-cd scripts
 ./download.sh
 ```
 
 This will download and prepare the lexicons for you, and will also print some
 directions for the other lexicon. If this doesn't work, email me and I'll help.
 
-**TODO**: Instructions for this and code samples are coming soon! If you want
-to use this and instructions aren't here yet, **please** email me or open an
-issue and I will complete this ASAP.
+Your input data is expected in the following format (tab-separated values):
+```
+<num> <num> <label> <tweet>
+```
+The first two numbers are tweet and author identifiers, and are not used, but are artifacts from the original dataset this library was based off of.
+
+*label* is a classification ("positive", "negative", or "neutral") of the tweet.
+
+*tweet* is the content of the tweet you are classifying.
+
+
+Now, the data must be split into the training, dev, and test portions. Take your input file (`input.tsv`) and split it into three files (apportioned how you would like): `training.gold.tsv`, `dev.gold.tsv`, and `test.input.tsv`. These should all be in the `input_data` directory.
+
+This data must be tokenized (or "twokenized"), so run the twokenizer on each like so:
+```
+./prep_input.sh
+```
+
+Now, we just have to do the training step.
+```
+python main.py --train --input input_data/ --clusters cache/clusters.csv --cache cache/
+```
 
 Licensing and Attribution
 =========================
@@ -150,12 +168,10 @@ Copyright Brendan O'Connor, Michel Krieger, and David Ahn, 2009-2010
 Tweetment
 ---------
 
-The Sentiment library was developed by Nicole Tietz-Sokolskaya. I want to license it
-under the GPL but I do not know if I am permitted by the university's policy.
-For now, do not assume that that is true. I am waiting to find out the policy
-of our university on software licenses.
+The Sentiment library was developed by Nicole Tietz-Sokolskaya. It is released under the
+GPL; see the LICENSE file.
 
-Copyright 2015 (Either Nicole or The Ohio State University; I am waiting to hear what the university's policy is)
+Copyright 2015-2017 Nicole Tietz-Sokolskaya
 
 This library is an implementation of work done by Saif M. Mohammad, Svetlana
 Kiritchenko, and Xiaodan Zhu. Please see their paper "NRC-Canada: Building the
